@@ -1,0 +1,21 @@
+# configuration for https://ohi-science.nceas.ucsb.edu/cdz
+study_area:       Gulfo de Cadiz
+git_owner:        OHI-Science
+git_repo:         cdz
+git_slug:         OHI-Science/cdz
+git_url:          https://github.com/OHI-Science/cdz
+app_url:          http://ohi-science.nceas.ucsb.edu/cdz
+default_branch:   published
+default_scenario: gulfo2015
+debug:            False
+last_updated:     2015-12-07
+ohicore_app:
+  git_owner: ohi-science
+  git_repo: ohicore
+  git_branch: dev
+  git_commit: 951a458152b7b891978d42d79d8292f4558829ff
+
+tabs_hide:        
+- Calculate
+- Report
+
