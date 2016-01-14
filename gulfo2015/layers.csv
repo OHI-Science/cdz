@@ -106,13 +106,13 @@ Data sources:
 Data sources:
 
 - [International Union for Conservation of Nature (IUCN)](http://www.iucnredlist.org/technical-documents/classification-schemes/threats-classification-scheme)
-","equal","global status was applied equally to all regions. ","ico_spp_extinction_status","~/github/ohi-global/eez2014/layers/ico_spp_extinction_status.csv","rgn_id",,"sciname",,,"category",TRUE,,,,,FALSE,,,5,1,
+","equal","global status was applied equally to all regions. ","ico_spp_extinction_status","~/github/ohi-global/eez2014/layers/ico_spp_extinction_status.csv","rgn_id",,"sciname",,,"category",TRUE,,,,,FALSE,,,,1,
 "ICO","ico_spp_popn_trend","ico_spp_popn_trend_gl2014.csv","popn_trend","trend score","IUCN population trend as a proxy for iconic species trend","International Union for Conservation of Nature (IUCN) Red List threat categories with aggregated species lists
 
 Data sources:
 
 - [International Union for Conservation of Nature (IUCN)](http://www.iucnredlist.org/technical-documents/classification-schemes/threats-classification-scheme)
-","equal","global trends were applied equally to all regions.","ico_spp_popn_trend","~/github/ohi-global/eez2014/layers/ico_spp_popn_trend.csv","rgn_id",,"sciname",,,"popn_trend",TRUE,,,,,FALSE,,,5,1,
+","equal","global trends were applied equally to all regions.","ico_spp_popn_trend","~/github/ohi-global/eez2014/layers/ico_spp_popn_trend.csv","rgn_id",,"sciname",,,"popn_trend",TRUE,,,,,FALSE,,,,1,
 "LE","le_gdp","le_gdp_sc2014-popn-inland25km.csv","usd","2010 USD","GDP","Gross Domestic Product (GDP) data (reported in 2012 US dollars) from The World Bank.
 
 Data sources:
@@ -139,7 +139,7 @@ Data sources:
 
 Data sources:
 
-- CIESIN & CIAT (Center for International Earth Science Information Network /Columbia University & Centro Internacional de Agricultura Tropical) (2005). **Gridded Population of the World, Version 3 (GPWv3): Population Density Grid, Future Estimates**. Palisades, NY. [NASA Socioeconomic Data and Applications Center (SEDAC)](http://sedac.ciesin.columbia.edu/data/set/gpw-v3-population-density-future-estimates)","raster","spatial data was extracted for each region. ","mar_coastalpopn_inland25mi","/Volumes/data_edit/git-annex/clip-n-ship/cdz/layers/mar_coastalpopn_inland25km_lyr.csv","rgn_id",,,"year","popsum",,TRUE,2005,2015,2600996.45067923,3032928.56894305,FALSE,,,1,1,FALSE
+- CIESIN & CIAT (Center for International Earth Science Information Network /Columbia University & Centro Internacional de Agricultura Tropical) (2005). **Gridded Population of the World, Version 3 (GPWv3): Population Density Grid, Future Estimates**. Palisades, NY. [NASA Socioeconomic Data and Applications Center (SEDAC)](http://sedac.ciesin.columbia.edu/data/set/gpw-v3-population-density-future-estimates)","raster","spatial data was extracted for each region. ","mar_coastalpopn_inland25mi","/Volumes/data_edit/git-annex/clip-n-ship/cdz/layers/mar_coastalpopn_inland25km_lyr.csv","rgn_id",,,"year","popsum",,TRUE,2005,2015,2600996.45067923,3032928.56894305,FALSE,,,,1,FALSE
 "MAR","mar_harvest_species","mar_harvest_species_gl2014.csv","species","species name","Mariculture species harvested","Lookup table for mariculture: species Latin names and species code.
 
 Data sources:

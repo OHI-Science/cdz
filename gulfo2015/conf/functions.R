@@ -700,95 +700,91 @@ NP <- function(scores, layers, year_max, debug = FALSE){
 }
 
 
-  CS <- function(layers){
-    # join layer data
-    d <-
-      plyr::join_all(
-        list(
-          layers$data[['hab_extent']] %>%
-            select(rgn_id, habitat, km2),
+CS <- function(layers){
 
-          layers$data[['hab_health']] %>%
-            select(rgn_id, habitat, health),
+  # join layer data
+  d <-
+    plyr::join_all(
+      list(
+        layers$data[['hab_extent']] %>%
+          select(rgn_id, habitat, km2),
 
-          layers$data[['hab_trend']] %>%
-            select(rgn_id, habitat, trend)),
+        layers$data[['hab_health']] %>%
+          select(rgn_id, habitat, health),
 
-        by = c('rgn_id','habitat'), type='full') %>%
-      select(rgn_id, habitat, km2, health, trend) %>%
-      mutate(habitat = as.character(habitat))
+        layers$data[['hab_trend']] %>%
+          select(rgn_id, habitat, trend)),
 
-    # limit to CP habitats and add rank
-    habitat.rank <- c('mangrove'         = 139,
-                      'saltmarsh'        = 210,
-                      'seagrass'         = 83)
+      by = c('rgn_id','habitat'), type='full') %>%
+    select(rgn_id, habitat, km2, health, trend) %>%
+    mutate(habitat = as.character(habitat))
 
-    d <- d %>%
-      filter(habitat %in% names(habitat.rank)) %>%
-      mutate(
-        rank = habitat.rank[habitat],
-        extent = ifelse(km2==0, NA, km2))
+  # limit to CP habitats and add rank
+  habitat.rank <- c('mangrove'         = 139,
+                    'saltmarsh'        = 210,
+                    'seagrass'         = 83)
 
-    if (nrow(d) > 0){
-      # status
-      scores_CS <- d %>%
-        filter(!is.na(rank) & !is.na(health) & !is.na(extent)) %>%
+  d <- d %>%
+    filter(habitat %in% names(habitat.rank)) %>%
+    mutate(
+      rank = habitat.rank[habitat],
+      extent = ifelse(km2==0, NA, km2))
+
+  # status
+  scores_CS <- d %>%
+    filter(!is.na(rank) & !is.na(health) & !is.na(extent)) %>%
+    group_by(rgn_id) %>%
+    summarize(
+      score = pmin(1, sum(rank * health * extent, na.rm=TRUE) / (sum(extent * rank, na.rm=TRUE)) ) * 100,
+      dimension = 'status')
+
+  # trend
+  d_trend <- d %>%
+    filter(!is.na(rank) & !is.na(trend) & !is.na(extent))
+
+  if (nrow(d_trend) > 0 ){
+    scores_CS <- rbind_list(
+      scores_CS,
+      d_trend %>%
         group_by(rgn_id) %>%
         summarize(
-          score = pmin(1, sum(rank * health * extent, na.rm=TRUE) / (sum(extent * rank, na.rm=TRUE)) ) * 100,
-          dimension = 'status')
+          score = sum(rank * trend * extent, na.rm=TRUE) / (sum(extent*rank, na.rm=TRUE)),
+          dimension = 'trend'))
 
-      # trend
-      d_trend <- d %>%
-        filter(!is.na(rank) & !is.na(trend) & !is.na(extent))
-      if (nrow(d_trend) > 0 ){
-        scores_CS <- rbind_list(
-          scores_CS,
-          d_trend %>%
-            group_by(rgn_id) %>%
-            summarize(
-              score = sum(rank * trend * extent, na.rm=TRUE) / (sum(extent*rank, na.rm=TRUE)),
-              dimension = 'trend'))
-      } else {
-        scores_CS <- rbind_list(
-          scores_CS,
-          d %>%
-            group_by(rgn_id) %>%
-            summarize(
-              score = NA,
-              dimension = 'trend'))
-      }
-
-      ### output data file for checking and data review
-      scores_check <- spread(scores_CS, dimension, score) %>%
-        select(rgn_id, status, trend_score=trend)
-
-      d_check <- d %>%
-        select(rgn_id, habitat, extent, health, trend, rank) %>%
-        arrange(rgn_id, habitat) %>%
-        left_join(scores_check, by="rgn_id")
-
-      ### end: output...
-
-      scores_CS <- scores_CS %>%
-        mutate(
-          goal = 'CS') %>%
-        select(region_id=rgn_id, goal, dimension, score)
-    } else {
-      scores_CS <- data.frame(
-        goal      = character(0),
-        dimension = character(0),
-        region_id = integer(0),
-        score     = numeric())
-    }
-
-    # return scores
-    return(scores_CS)
+  } else { # nrow(d) <= 0
+    scores_CS <- rbind_list(
+      scores_CS,
+      d %>%
+        group_by(rgn_id) %>%
+        summarize(
+          score = NA,
+          dimension = 'trend'))
   }
+
+  ### output data file for checking and data review
+  scores_check <- spread(scores_CS, dimension, score) %>%
+    select(rgn_id, status, trend_score=trend)
+
+  d_check <- d %>%
+    select(rgn_id, habitat, extent, health, trend, rank) %>%
+    arrange(rgn_id, habitat) %>%
+    left_join(scores_check, by="rgn_id")
+
+  ### end: output...
+
+  scores_CS <- scores_CS %>%
+    mutate(
+      goal = 'CS') %>%
+    select(region_id=rgn_id, goal, dimension, score)
+
+  # return scores
+  return(scores_CS)
+}
 
 
 
 CP <- function(layers){
+
   # sum mangrove_offshore + mangrove_inland1km = mangrove to match with extent and trend
   m <- layers$data[['hab_extent']] %>%
     filter(habitat %in% c('mangrove_inland1km','mangrove_offshore')) %>%
@@ -839,58 +835,49 @@ CP <- function(layers){
       rank = habitat.rank[habitat],
       extent = ifelse(km2==0, NA, km2))
 
-  if (nrow(d) > 0){
-    # status
-    scores_CP <- d %>%
-      filter(!is.na(rank) & !is.na(health) & !is.na(extent)) %>%
-      group_by(rgn_id) %>%
-      summarize(
-        score = pmin(1, sum(rank * health * extent, na.rm=TRUE) / (sum(extent * rank, na.rm=TRUE)) ) * 100,
-        dimension = 'status')
+  # status
+  scores_CP <- d %>%
+    filter(!is.na(rank) & !is.na(health) & !is.na(extent)) %>%
+    group_by(rgn_id) %>%
+    summarize(
+      score = pmin(1, sum(rank * health * extent, na.rm=TRUE) / (sum(extent * rank, na.rm=TRUE)) ) * 100,
+      dimension = 'status')
 
-    # trend
-    d_trend <- d %>%
-      filter(!is.na(rank) & !is.na(trend) & !is.na(extent))
-    if (nrow(d_trend) > 0 ){
-      scores_CP <- rbind_list(
-        scores_CP,
-        d_trend %>%
-          group_by(rgn_id) %>%
-          summarize(
-            score = sum(rank * trend * extent, na.rm=TRUE) / (sum(extent*rank, na.rm=TRUE)),
-            dimension = 'trend'))
-    } else {
-      scores_CS <- rbind_list(
-        scores_CS,
-        d %>%
-          group_by(rgn_id) %>%
-          summarize(
-            score = NA,
-            dimension = 'trend'))
-    }
+  # trend
+  d_trend <- d %>%
+    filter(!is.na(rank) & !is.na(trend) & !is.na(extent))
 
-    ### output data file for checking and data review
-    scores_check <- spread(scores_CP, dimension, score) %>%
-      select(rgn_id, status, trend_score=trend)
-
-    d_check <- d %>%
-      select(rgn_id, habitat, extent, health, trend, rank) %>%
-      arrange(rgn_id, habitat) %>%
-      left_join(scores_check, by="rgn_id")
-
-    ### end: output...
-
-    scores_CP <- scores_CP %>%
-      mutate(
-        goal = 'CP') %>%
-      select(region_id=rgn_id, goal, dimension, score)
+  if (nrow(d_trend) > 0 ){
+    scores_CP <- rbind_list(
+      scores_CP,
+      d_trend %>%
+        group_by(rgn_id) %>%
+        summarize(
+          score = sum(rank * trend * extent, na.rm=TRUE) / (sum(extent*rank, na.rm=TRUE)),
+          dimension = 'trend'))
   } else {
-    scores_CP <- data.frame(
-      goal      = character(0),
-      dimension = character(0),
-      region_id = integer(0),
-      score     = numeric())
+    scores_CP <- rbind_list(
+      scores_CP,
+      d %>%
+        group_by(rgn_id) %>%
+        summarize(
+          score = NA,
+          dimension = 'trend'))
   }
+
+  ### output data file for checking and data review
+  scores_check <- spread(scores_CP, dimension, score) %>%
+    select(rgn_id, status, trend_score=trend)
+
+  d_check <- d %>%
+    select(rgn_id, habitat, extent, health, trend, rank) %>%
+    arrange(rgn_id, habitat) %>%
+    left_join(scores_check, by="rgn_id")
+
+  scores_CP <- scores_CP %>%
+    mutate(
+      goal = 'CP') %>%
+    select(region_id=rgn_id, goal, dimension, score)
 
   # return scores
   return(scores_CP)
