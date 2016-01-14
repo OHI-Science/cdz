@@ -14,7 +14,7 @@ for (p in c('ohicore','ohigui','rCharts')){
 }
 
 # install dependencies
-for (p in c('devtools')){
+for (p in c('devtools', 'tidyr', 'zoo', 'psych')){
   if (!require(p, character.only=T)){
     install.packages(p)
     require(p, character.only=T)
@@ -22,7 +22,6 @@ for (p in c('devtools')){
 }
 
 # install packages
-install.packages(c('zoo', 'psych'))
 install_github('ohi-science/rCharts')
 install_github('ohi-science/ohicore')
 
