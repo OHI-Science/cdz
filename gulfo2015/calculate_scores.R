@@ -1,5 +1,6 @@
 # load required libraries
-suppressWarnings(require(ohicore))
+library(tidyr)
+suppressWarnings(require(ohicore)) # source('install_ohicore.r')
 
 # set working directory to the scenario directory, ie containing conf and layers directories
 setwd('~/github/cdz/gulfo2015')
@@ -15,4 +16,5 @@ layers = Layers('layers.csv', 'layers')
 
 # calculate scenario scores
 scores = CalculateAll(conf, layers, debug=F)
+
 write.csv(scores, 'scores.csv', na='', row.names=F)
